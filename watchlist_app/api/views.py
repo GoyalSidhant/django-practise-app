@@ -1,7 +1,7 @@
-from watchlist_app.models import Movie, StreamPlatform, WatchList
-from watchlist_app.api.serializer import MovieSerializer, WatchListSerializer, StreamPlatformSerializer
+from watchlist_app.models import Movie, StreamPlatform, WatchList, Review
+from watchlist_app.api.serializer import MovieSerializer, WatchListSerializer, StreamPlatformSerializer, ReviewSerializer
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import status, generics, mixins
 
 from rest_framework.views import APIView
 class MovieList(APIView):
@@ -53,6 +53,7 @@ class WatchListList(APIView):
     def get(self , request):
         movies = WatchList.objects.all()
         serializer = WatchListSerializer(movies, many=True)
+        #serializer = WatchListSerializer(movies, many=True, context = {'request':request})
         return Response(serializer.data)
     
     def post(self , request): 
@@ -132,3 +133,27 @@ class StreamPlatformDetails(APIView):
          movie = StreamPlatform.objects.get(pk=pk)
          movie.delete()
          return Response(status=status.HTTP_204_NO_CONTENT)
+    
+
+
+class ReviewDetail( mixins.RetrieveModelMixin , generics.GenericAPIView):
+
+    queryset = Review.objects.all()
+    serializer_class = ReviewSerializer
+
+    def get(self, request, *args, **kwargs):
+        return self.retrieve(request , *args, **kwargs)
+    
+   
+    
+
+class ReviewList(mixins.ListModelMixin , mixins.CreateModelMixin , generics.GenericAPIView):
+
+    queryset = Review.objects.all()
+    serializer_class = ReviewSerializer
+
+    def get(self, request, *args, **kwargs):
+        return self.list(request , *args, **kwargs)
+    
+    def post(self, request , *args , **kwargs):
+        return self.create(request, *args, **kwargs)
